@@ -71,6 +71,18 @@ def aplicar_runner_rc(src: Path, nome: str):
         substituir(rc, rf'VALUE "{campo}", ".*?" "\\0"', f'VALUE "{campo}", "{valor}" "\\0"', f"Runner.rc {campo}")
 
 
+def aplicar_portable(src: Path, nome: str):
+    """Metadados do .exe avulso (empacotador libs/portable, que descompacta e roda o app)."""
+    toml = src / "libs/portable/Cargo.toml"
+    trocas = {
+        "LegalCopyright": f"{EMPRESA}. Baseado no RustDesk (AGPL-3.0).",
+        "ProductName": nome,
+        "FileDescription": nome,
+    }
+    for campo, valor in trocas.items():
+        substituir(toml, rf'^{campo} = ".*?"', f'{campo} = "{valor}"', f"portable/Cargo.toml {campo}")
+
+
 def quadrado(img, lado):
     from PIL import Image
     img = img.convert("RGBA")
@@ -126,6 +138,7 @@ def main():
 
     aplicar_config(a.src, a.nome, a.host, a.key, travar=not a.sem_travar)
     aplicar_runner_rc(a.src, a.nome)
+    aplicar_portable(a.src, a.nome)
     if a.logo or a.icone:
         aplicar_imagens(a.src, a.logo, a.icone, a.logo_escuro)
     else:

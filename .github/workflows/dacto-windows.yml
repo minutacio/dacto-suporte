@@ -81,10 +81,13 @@ jobs:
         shell: bash
         run: |
           pip install pillow
-          ARGS=(--src . --host "${{ vars.DACTO_HOST }}" --key "${{ vars.DACTO_KEY }}" --nome "$APP_NAME")
-          [ -f dacto/logo.png ] && ARGS+=(--logo dacto/logo.png)
-          [ -f dacto/icone.png ] && ARGS+=(--icone dacto/icone.png)
-          [ -f dacto/logo_dark.png ] && ARGS+=(--logo-escuro dacto/logo_dark.png)
+          # Atenção: o .gitignore do RustDesk ignora *png — imagens de dacto/ precisam de "git add -f".
+          for f in dacto/logo.png dacto/icone.png; do
+            [ -f "$f" ] || { echo "::error::$f não está no repositório (use git add -f)"; exit 1; }
+          done
+          ARGS=(--src . --host "${{ vars.DACTO_HOST }}" --key "${{ vars.DACTO_KEY }}" --nome "$APP_NAME"
+                --logo dacto/logo.png --icone dacto/icone.png)
+          if [ -f dacto/logo_dark.png ]; then ARGS+=(--logo-escuro dacto/logo_dark.png); fi
           python dacto/aplicar-marca.py "${ARGS[@]}"
           git --no-pager diff --stat
 
