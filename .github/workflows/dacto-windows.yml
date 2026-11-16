@@ -84,6 +84,7 @@ jobs:
           ARGS=(--src . --host "${{ vars.DACTO_HOST }}" --key "${{ vars.DACTO_KEY }}" --nome "$APP_NAME")
           [ -f dacto/logo.png ] && ARGS+=(--logo dacto/logo.png)
           [ -f dacto/icone.png ] && ARGS+=(--icone dacto/icone.png)
+          [ -f dacto/logo_dark.png ] && ARGS+=(--logo-escuro dacto/logo_dark.png)
           python dacto/aplicar-marca.py "${ARGS[@]}"
           git --no-pager diff --stat
 

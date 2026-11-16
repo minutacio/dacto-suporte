@@ -80,7 +80,15 @@ def quadrado(img, lado):
     return tela
 
 
-def aplicar_imagens(src: Path, logo: Path | None, icone: Path | None):
+def salvar_logo(origem: Path, destino: Path):
+    from PIL import Image
+    img = Image.open(origem).convert("RGBA")
+    img.thumbnail((600, 120), Image.LANCZOS)  # 2x de 300x60 para telas de alta resolução
+    img.save(destino)
+    print(f"[ok] {destino.relative_to(destino.parents[2])}")
+
+
+def aplicar_imagens(src: Path, logo: Path | None, icone: Path | None, logo_escuro: Path | None = None):
     from PIL import Image
     base_icone = Image.open(icone or logo)
     ico256 = quadrado(base_icone, 256)
@@ -94,10 +102,9 @@ def aplicar_imagens(src: Path, logo: Path | None, icone: Path | None):
         quadrado(base_icone, lado).save(src / destino)
         print(f"[ok] {destino}")
     if logo:
-        img = Image.open(logo).convert("RGBA")
-        img.thumbnail((600, 120), Image.LANCZOS)  # 2x de 300x60 para telas de alta resolução
-        img.save(src / "flutter/assets/logo.png")
-        print("[ok] flutter/assets/logo.png (logo na tela principal)")
+        salvar_logo(logo, src / "flutter/assets/logo.png")  # tema claro (e padrão)
+    if logo_escuro:
+        salvar_logo(logo_escuro, src / "flutter/assets/logo_dark.png")  # tema escuro
 
 
 def main():
@@ -108,6 +115,7 @@ def main():
     p.add_argument("--nome", default=NOME_PADRAO)
     p.add_argument("--logo", type=Path)
     p.add_argument("--icone", type=Path)
+    p.add_argument("--logo-escuro", type=Path, help="variante da logo para o tema escuro")
     p.add_argument("--sem-travar", action="store_true", help="permite o usuário trocar o servidor")
     a = p.parse_args()
 
@@ -119,7 +127,7 @@ def main():
     aplicar_config(a.src, a.nome, a.host, a.key, travar=not a.sem_travar)
     aplicar_runner_rc(a.src, a.nome)
     if a.logo or a.icone:
-        aplicar_imagens(a.src, a.logo, a.icone)
+        aplicar_imagens(a.src, a.logo, a.icone, a.logo_escuro)
     else:
         print("[aviso] sem --logo/--icone: ícones continuam os do RustDesk.")
 
